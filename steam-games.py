@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+import os
+import vdf
+import subprocess
+
+
+
+STEAM_PATH = os.path.expanduser("~/.local/share/Steam/")
+STEAMAPPS = os.path.join(STEAM_PATH, "steamapps")
+USERDATA = os.path.join(STEAM_PATH, "userdata")
+
+steam_ids = os.listdir(USERDATA)
+steam_id = steam_ids[0]
+LOCALCONFIG = os.path.join(USERDATA, steam_id, "config", "localconfig.vdf")
+
+with open(LOCALCONFIG, 'r', encoding="utf-8") as f:
+    localconfig = vdf.load(f)
+
+playtimes = (
+    localconfig
+    .get("UserLocalConfigStore", {})
+    .get("Software", {})
+    .get("Valve", {})
+    .get("Steam", {})
+    .get("Apps", {})
+)
+
+games = []
+
+for file in os.listdir(STEAMAPPS):
+    if file.startswith("appmanifest") and file.endswith(".acf"):
+        path = os.path.join(STEAMAPPS, file)
+
+        with open(path, 'r', encoding="utf-8") as f:
+            data = vdf.load(f)["AppState"]
+
+            if data.get("DownloadType") == "0" or data.get("name").startswith("Steam Linux Runtime"):
+                continue
+
+        appid = data["appid"]
+        name = data["name"]
+
+        games.append((appid, name))
+
+games.sort(key=lambda x: x[1])
+
+print("Jogos instalados:\n")
+for i, game in enumerate(games, 1):
+    print(f"[{i}] {game[1]}")
+
+choice = input("\nDigite o codigo do jogo: ")
+
+try:
+    index = int(choice) - 1
+    appid = games[index][0]
+
+    subprocess.Popen(
+        ["xdg-open", f"steam://rungameid/{appid}"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
+except:
+    print("Codigo invalido")
