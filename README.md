@@ -1,86 +1,85 @@
 # Steam CLI Launcher (Linux)
 
-Um script simples em Python para listar jogos instalados da Steam no Linux e iniciá-los diretamente pelo terminal.
+### 🌍 Read this in:
+- [Português brasileiro](README.pt-BR.md)
 
-Nada de abrir a Steam, caçar jogo com o mouse e perder tempo.
+A simple Python script to list installed Steam games on Linux and launch them directly from the terminal.
 
-## Funcionalidades
+No opening Steam, no hunting for games with the mouse, no wasted time.
 
-- Lista jogos instalados da Steam
-- Ordena os jogos em ordem alfabética
-- Abre o jogo selecionado via `steam://rungameid`
-- Ignora Steam Linux Runtimes automaticamente
-- Funciona direto no terminal
+## Features
 
-> Observação: versões do Proton instaladas pela Steam **aparecem na lista**, pois também são registradas como apps. Os runtimes da Steam foram filtrados manualmente no script.
+- Lists installed Steam games  
+- Sorts games alphabetically  
+- Launches the selected game via `steam://rungameid`  
+- Automatically ignores Steam Linux Runtimes  
+- Runs directly in the terminal  
 
-## Estrutura do projeto
+> Note: Proton versions installed by Steam **appear in the list**, since they are also registered as apps. Steam runtimes are manually filtered out in the script.
+
+## Project structure
 
 ```text
 steam-cli-launcher/
-├── steam-games        # script principal (executável, sem extensão)
-├── steam-games.py     # versão de testes / desenvolvimento
-├── README.md
+├── steam-games        # main script (executable, no extension)
+├── steam-games.py     # testing / development version
 ```
 
-- steam-games é o arquivo pensado para uso diário
-- steam-games.py é apenas para testes e ajustes no código
+- steam-games is the file intended for daily use
 
-## Requisitos
+- steam-games.py is only for testing and code adjustments
 
+## Requirements
 - Linux
 
-- Steam instalada
+- Steam installed
 
 - Python 3
 
-- Biblioteca vdf
+- `vdf` library
 
-## Instalando a dependência
+## Installing the dependency
 
-``` bash
+```bash
 pip install vdf
 ```
 
-Ou, dependendo da distro:
+Or, depending on your distro:
 
-``` bash
+```bash
 sudo pacman -S python-vdf
 ```
 
-## Instalação
+## Installation
+Give execution permission:
 
-Dê permissão de execução:
-
-``` bash
+```bash
 chmod +x steam-games
 ```
 
-No meu caso, coloquei o arquivo em:
+In my case, I placed the file in:
 
-``` text
+```text
 ~/.local/bin/
 ```
 
-Assim o script pode ser executado de qualquer lugar no terminal, desde que `~/.local/bin/` esteja no `PATH`.
+This way, the script can be executed from anywhere in the terminal, as long as `~/.local/bin/` is in your `PATH`.
 
-## Uso
+## Usage
+Just run:
 
-Basta rodar:
-
-``` bash
+```bash
 steam-games
 ```
 
-O script vai listar os jogos instalados.
-Digite o número correspondente ao jogo e ele será iniciado automaticamente pela Steam.
+The script will list installed games.
+Type the number corresponding to the game and it will be launched automatically via Steam.
 
-## Observações
+## Notes
+- Tested on Fedora KDE (Linux)
 
-- Testado em Fedora KDE (Linux)
+- Only locally installed games appear
 
-- Apenas jogos instalados localmente aparecem
+- Proton versions installed by Steam appear in the list
 
-- Protons instalados pela Steam aparecem na lista
-
-- Steam Linux Runtimes são ignorados
+- Steam Linux Runtimes are ignored
