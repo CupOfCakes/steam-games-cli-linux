@@ -1,5 +1,8 @@
 # Steam CLI Launcher (Linux)
 
+### 🌍 Read this in:
+- [English](README.md)
+
 Um script simples em Python para listar jogos instalados da Steam no Linux e iniciá-los diretamente pelo terminal.
 
 Nada de abrir a Steam, caçar jogo com o mouse e perder tempo.
