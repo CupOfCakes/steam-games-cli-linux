@@ -3,61 +3,95 @@
 import os
 import vdf
 import subprocess
+import time
 
+#return games list
+def getGames(STEAMAPPS: str) -> list[tuple[int, str]]:
+    games = []
 
+    for file in os.listdir(STEAMAPPS):
+        if file.startswith("appmanifest") and file.endswith(".acf"):
+            path = os.path.join(STEAMAPPS, file)
 
-STEAM_PATH = os.path.expanduser("~/.local/share/Steam/")
-STEAMAPPS = os.path.join(STEAM_PATH, "steamapps")
-USERDATA = os.path.join(STEAM_PATH, "userdata")
+            with open(path, 'r', encoding="utf-8") as f:
+                data = vdf.load(f)["AppState"]
 
-steam_ids = os.listdir(USERDATA)
-steam_id = steam_ids[0]
-LOCALCONFIG = os.path.join(USERDATA, steam_id, "config", "localconfig.vdf")
+                if data.get("DownloadType") == "0" or data.get("name").startswith("Steam Linux Runtime"):
+                    continue
 
-with open(LOCALCONFIG, 'r', encoding="utf-8") as f:
-    localconfig = vdf.load(f)
+            appid = data["appid"]
+            name = data["name"]
 
-playtimes = (
-    localconfig
-    .get("UserLocalConfigStore", {})
-    .get("Software", {})
-    .get("Valve", {})
-    .get("Steam", {})
-    .get("Apps", {})
-)
+            appid = int(appid)
 
-games = []
+            games.append((appid, name))
 
-for file in os.listdir(STEAMAPPS):
-    if file.startswith("appmanifest") and file.endswith(".acf"):
-        path = os.path.join(STEAMAPPS, file)
+    games.sort(key=lambda x: x[1])
 
-        with open(path, 'r', encoding="utf-8") as f:
-            data = vdf.load(f)["AppState"]
+    return games
+#---
 
-            if data.get("DownloadType") == "0" or data.get("name").startswith("Steam Linux Runtime"):
-                continue
+#game choice
+def getChoice(games: list[tuple[int, str]]) -> int:
+    print("Jogos instalados:\n")
+    for i, game in enumerate(games, 1):
+        print(f"[{i}] {game[1]}")
 
-        appid = data["appid"]
-        name = data["name"]
+    choice = input("\nDigite o codigo do jogo: ")
+        
+    return int(choice)
+#---
 
-        games.append((appid, name))
-
-games.sort(key=lambda x: x[1])
-
-print("Jogos instalados:\n")
-for i, game in enumerate(games, 1):
-    print(f"[{i}] {game[1]}")
-
-choice = input("\nDigite o codigo do jogo: ")
-
-try:
-    index = int(choice) - 1
+#process
+def runGame(choice: int, games: list[tuple[int, str]]) -> None:
+    index = choice - 1
     appid = games[index][0]
+
+    if subprocess.call(["pgrep", "-x", "steam"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+                ) != 0:
+
+        subprocess.Popen(["steam", "-silent"],
+                    )
+
+        while subprocess.call(["pgrep", "-x", "steamwebhelper"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                    ) != 0:
+
+            time.sleep(1)
+
+        time.sleep(3)
+    
     subprocess.Popen(
-        ["xdg-open", f"steam://rungameid/{appid}"],
+        ["steam", f"steam://rungameid/{appid}"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
     )
-except:
-    print("Codigo invalido")
+#---
+
+if __name__ == "__main__":
+    #globais
+    STEAM_PATH = os.path.expanduser("~/.local/share/Steam/")
+    STEAMAPPS = os.path.join(STEAM_PATH, "steamapps")
+    #---
+
+    try:
+        gamelist = getGames(STEAMAPPS)
+
+        playerChoice = getChoice(gamelist)
+
+        runGame(playerChoice, gamelist)
+
+    except ValueError:
+        print("Entrada inválida: digite um número.")
+
+    except IndexError:
+        print("Código inválido: jogo não existe na lista.")
+
+    except FileNotFoundError:
+        print("Steam não encontrada no sistema.")
+
+    except Exception as e:
+        print(f"Erro inesperado: {e}")
