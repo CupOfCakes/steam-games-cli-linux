@@ -5,6 +5,46 @@ import vdf
 import subprocess
 import time
 
+class NoUsersFound(Exception):
+    pass
+
+#return players
+def getUsers(STEAMCONFIG: str) -> list[dict]:
+    usersList = []
+
+    path = os.path.join(STEAMCONFIG, "loginusers.vdf")
+
+    if not os.path.exists(path):
+        raise NoUsersFound("Dados de usuarios não encontrado")
+
+    with open(path, 'r', encoding="utf-8") as f:
+        data = vdf.load(f)
+
+        for user, dados in data["users"].items():
+
+            userDict = {
+                "ID": user, 
+                "UserName":dados.get("PersonaName"), 
+                "AccountName":dados.get("AccountName")
+                }
+            
+            usersList.append(userDict)
+        
+    return usersList
+#---      
+
+def selectUser(users: list[dict]) -> str:
+    print("Usuarios disponiveis: ")
+
+    for i, user in enumerate(users, 1):
+        print(f"[{i}] {user["AccountName"]}({user["UserName"]})")
+    
+    choice = input("Digite o codigo do usuario: ")
+
+    return int(choice) - 1
+
+
+
 #return games list
 def getGames(STEAMAPPS: str) -> list[tuple[int, str]]:
     games = []
@@ -39,12 +79,12 @@ def getChoice(games: list[tuple[int, str]]) -> int:
 
     choice = input("\nDigite o codigo do jogo: ")
         
-    return int(choice)
+    return int(choice) - 1
 #---
 
 #process
 def runGame(choice: int, games: list[tuple[int, str]]) -> None:
-    index = choice - 1
+    index = choice
     appid = games[index][0]
 
     if subprocess.call(["pgrep", "-x", "steam"],
@@ -75,9 +115,14 @@ if __name__ == "__main__":
     #globais
     STEAM_PATH = os.path.expanduser("~/.local/share/Steam/")
     STEAMAPPS = os.path.join(STEAM_PATH, "steamapps")
+    STEAMCONFIG = os.path.join(STEAM_PATH, "config")
     #---
 
-    try:
+    users = getUsers(STEAMCONFIG)
+
+    userID = selectUser(users)
+
+    '''try:
         gamelist = getGames(STEAMAPPS)
 
         playerChoice = getChoice(gamelist)
@@ -94,4 +139,4 @@ if __name__ == "__main__":
         print("Steam não encontrada no sistema.")
 
     except Exception as e:
-        print(f"Erro inesperado: {e}")
+        print(f"Erro inesperado: {e}")'''
