@@ -25,7 +25,8 @@ def getUsers(STEAMCONFIG: str) -> list[dict]:
             userDict = {
                 "ID": user, 
                 "UserName":dados.get("PersonaName"), 
-                "AccountName":dados.get("AccountName")
+                "AccountName":dados.get("AccountName"),
+                "Logged":dados.get("MostRecent") == "1"
                 }
             
             usersList.append(userDict)
@@ -33,6 +34,16 @@ def getUsers(STEAMCONFIG: str) -> list[dict]:
     return usersList
 #---      
 
+#do login
+def login(user: dict) -> None:
+    print("necessario fazer login")
+    print(f"conta: {user["AccountName"]}({user["UserName"]}")
+    password = input("digite a senha: ")
+
+    subprocess.Popen(["steam","-login", user[AccountName], password])
+#---    
+
+#select user
 def selectUser(users: list[dict]) -> str:
     print("Usuarios disponiveis: ")
 
@@ -42,8 +53,7 @@ def selectUser(users: list[dict]) -> str:
     choice = input("Digite o codigo do usuario: ")
 
     return int(choice) - 1
-
-
+#---
 
 #return games list
 def getGames(STEAMAPPS: str) -> list[tuple[int, str]]:
@@ -90,19 +100,21 @@ def runGame(choice: int, games: list[tuple[int, str]]) -> None:
     if subprocess.call(["pgrep", "-x", "steam"],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL
-                ) != 0:
+                ) != 0 :
 
         subprocess.Popen(["steam", "-silent"],
                     )
+    #---
 
-        while subprocess.call(["pgrep", "-x", "steamwebhelper"],
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL
-                    ) != 0:
+    while subprocess.call(["pgrep", "-x", "steamwebhelper"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+                ) != 0:
 
-            time.sleep(1)
+        time.sleep(1)
+    #---
 
-        time.sleep(3)
+    time.sleep(3)
     
     subprocess.Popen(
         ["steam", f"steam://rungameid/{appid}"],
@@ -118,11 +130,11 @@ if __name__ == "__main__":
     STEAMCONFIG = os.path.join(STEAM_PATH, "config")
     #---
 
-    users = getUsers(STEAMCONFIG)
+    try:
+        users = getUsers(STEAMCONFIG)
 
-    userID = selectUser(users)
+        userID = selectUser(users) if len(users) > 1 else users[0]["ID"]
 
-    '''try:
         gamelist = getGames(STEAMAPPS)
 
         playerChoice = getChoice(gamelist)
@@ -139,4 +151,4 @@ if __name__ == "__main__":
         print("Steam não encontrada no sistema.")
 
     except Exception as e:
-        print(f"Erro inesperado: {e}")'''
+        print(f"Erro inesperado: {e}")
